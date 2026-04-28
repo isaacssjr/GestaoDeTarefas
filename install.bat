@@ -1,5 +1,9 @@
 @echo off
 chcp 65001 >nul
+
+REM Muda para o diretorio onde o script esta localizado
+cd /d "%~dp0"
+
 echo ==========================================
 echo   Gestao de Atividades TI - Instalador
 echo ==========================================
