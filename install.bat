@@ -40,11 +40,16 @@ REM Ativar ambiente virtual
 echo [3/5] Ativando ambiente virtual...
 call .venv\Scripts\activate.bat
 
-REM Instalar dependencias
+REM Instalar dependencias (suprimindo saidas desnecessarias)
 echo.
 echo [4/5] Instalando dependencias...
-pip install --upgrade pip --quiet
-pip install -r requirements.txt --quiet
+call .venv\Scripts\python.exe -m pip install --upgrade pip --quiet 2>nul
+call .venv\Scripts\pip.exe install -r requirements.txt --quiet 2>nul
+if %errorlevel% neq 0 (
+    echo.
+    echo ERRO ao instalar dependencias. Tentando novamente...
+    call .venv\Scripts\pip.exe install plyer pyinstaller openpyxl
+)
 
 REM Compilar executavel
 echo.
