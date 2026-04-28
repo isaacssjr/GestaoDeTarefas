@@ -760,7 +760,7 @@ class MainWindow(QMainWindow):
         
         QMessageBox.information(self, "Sucesso", "Tarefa adicionada com sucesso!")
     
-    def refresh_table(self):
+    def refresh_table(self, show_completed=False):
         """Atualiza tabela de tarefas"""
         self.table.setRowCount(0)
         
@@ -773,7 +773,16 @@ class MainWindow(QMainWindow):
             'Alta': '#ff9800'
         }
         
+        # Salvar seleção atual
+        selected_task_id = None
+        if self.selected_row >= 0 and self.selected_row < self.table.rowCount():
+            selected_task_id = self.get_task_id_from_row(self.selected_row)
+        
         for task_id, task in tasks.items():
+            # Filtrar tarefas concluídas (a menos que show_completed seja True)
+            if task.get('status') == 'Concluido' and not show_completed:
+                continue
+            
             row = self.table.rowCount()
             self.table.insertRow(row)
             
@@ -850,8 +859,14 @@ class MainWindow(QMainWindow):
     def on_selection_changed(self):
         """Handle seleção de tarefa"""
         selected_rows = self.table.selectedItems()
-        if selected_rows:
-            self.selected_row = selected_rows[0].row()
+        if selected_rows and len(selected_rows) > 0:
+            # Manter a seleção sem perder o foco
+            current_row = self.selected_row
+            if current_row >= 0 and current_row < self.table.rowCount():
+                self.selected_row = current_row
+            else:
+                self.selected_row = selected_rows[0].row()
+            
             task_id = self.get_task_id_from_row(self.selected_row)
             
             if task_id:
@@ -861,7 +876,7 @@ class MainWindow(QMainWindow):
                     self.btn_start.setEnabled(status in ['Aguardando', 'Pausado'])
                     self.btn_pause.setEnabled(status == 'Em Andamento')
                     self.btn_finish.setEnabled(status in ['Em Andamento', 'Pausado'])
-                    self.btn_delete.setEnabled(status in ['Aguardando', 'Concluido'])
+                    self.btn_delete.setEnabled(True)  # Habilitar exclusão para qualquer tarefa
         else:
             self.selected_row = -1
             self.btn_start.setEnabled(False)
