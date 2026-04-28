@@ -18,7 +18,7 @@ from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, 
     QLabel, QLineEdit, QPushButton, QComboBox, QTableWidget, 
     QTableWidgetItem, QHeaderView, QMessageBox, QSystemTrayIcon,
-    QMenu, QDialog, QGroupBox, QDateEdit, QFileDialog
+    QMenu, QDialog, QGroupBox, QDateEdit, QFileDialog, QAction
 )
 from PyQt6.QtCore import Qt, QTimer, QDate, pyqtSignal
 from PyQt6.QtGui import QIcon, QColor, QPixmap
