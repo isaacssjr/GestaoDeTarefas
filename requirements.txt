@@ -1,0 +1,125 @@
+# Requisitos para o Gerenciador de Tarefas TI
+
+## Dependências Principais
+
+### Obrigatórias (já incluídas no Python padrão):
+- tkinter (interface gráfica)
+- json (armazenamento de dados)
+- datetime (controle de tempo)
+- threading (monitoramento em segundo plano)
+
+### Opcionais (para funcionalidades extras):
+
+#### 1. plyer - Para notificações nativas do sistema
+```bash
+pip install plyer
+```
+- Permite enviar notificações push nativas do Windows
+- Fallback automático para messagebox se não estiver instalado
+
+#### 2. pyinstaller - Para criar o executável .exe
+```bash
+pip install pyinstaller
+```
+- Converte o script Python em um arquivo .exe independente
+- Não requer instalação do Python na máquina destino
+
+## Instalação Completa
+
+```bash
+# Instalar todas as dependências
+pip install plyer pyinstaller
+
+# Executar o programa
+python gestor_tarefas_ti.py
+
+# Criar executável .exe
+pyinstaller --onefile --windowed --name "GerenciadorTarefasTI" --icon=NONE gestor_tarefas_ti.py
+```
+
+## Estrutura do Projeto
+
+```
+/workspace/
+├── gestor_tarefas_ti.py      # Código principal do sistema
+├── tarefas.json              # Banco de dados (criado automaticamente)
+├── requirements.txt          # Este arquivo
+├── README.md                 # Documentação
+└── dist/                     # Pasta com o .exe após compilação
+    └── GerenciadorTarefasTI.exe
+```
+
+## Funcionalidades Implementadas
+
+### MVP Entregue:
+
+1. ✅ **Adicionar, Gerenciar e Concluir Tarefas**
+   - Criação de tarefas com título, descrição, chamado e prioridade
+   - Status: pendente, em andamento, pausada, concluída
+   - Exclusão de tarefas
+
+2. ✅ **Visualização de Tarefas em Andamento com Prioridades por Cores**
+   - Verde claro: Baixa prioridade
+   - Azul claro: Média prioridade
+   - Laranja: Alta prioridade
+   - Vermelho: Urgente
+
+3. ✅ **Múltiplas Demandas em Paralelo**
+   - Possibilidade de ter várias tarefas com status "em andamento"
+   - Indicador visual quando há múltiplas tarefas ativas
+
+4. ✅ **Notificações de Múltiplas Tarefas**
+   - Alerta a cada 30 minutos (configurável) quando há mais de uma tarefa em andamento
+   - Notificação via pop-up do sistema ou messagebox
+
+5. ✅ **Log de Atividades com Controle de Tempo**
+   - Registro de data/hora de início e fim
+   - Função de pause/resume
+   - Cálculo automático do tempo total investido
+   - Histórico de sessões de trabalho por tarefa
+
+6. ✅ **Caixa de Diálogo para Número do Chamado**
+   - Campo para inserir o número/linha do chamado
+   - Reutilização do número em novas tarefas
+   - Espaço para integração futura com API de chamados
+
+## Por que Python é a Melhor Escolha?
+
+### Vantagens sobre outras opções:
+
+1. **vs Batch/PowerShell puro:**
+   - Interface gráfica profissional (tkinter já vem instalado)
+   - Melhor gerenciamento de estado e dados
+   - Mais fácil manutenção e escalabilidade
+
+2. **vs C#/C++:**
+   - Desenvolvimento mais rápido
+   - Não precisa compilar para testar mudanças
+   - Bibliotecas ricas para interface e automação
+
+3. **vs Electron/Node.js:**
+   - Menor consumo de memória RAM
+   - Sem necessidade de instalar runtime adicional
+   - Executável final menor
+
+4. **Python + PyInstaller:**
+   - Gera .exe único e portátil
+   - Funciona em qualquer Windows sem Python instalado
+   - Fácil distribuição para a equipe
+
+## Próximos Passos Sugeridos
+
+1. **Testar o sistema** conforme está
+2. **Instalar plyer** para notificações nativas
+3. **Personalizar** cores, intervalos de notificação
+4. **Integrar com sistema de chamados** via API (se houver)
+5. **Compilar para .exe** usando PyInstaller
+6. **Distribuir** para a equipe
+
+## Configurações Personalizáveis
+
+No código, você pode ajustar:
+
+- `intervalo_alerta = 1800` # 30 minutos em segundos (linha ~430)
+- `self.cores_prioridade` # Cores das prioridades (linhas ~172-177)
+- `self.root.geometry("1200x700")` # Tamanho da janela (linha ~164)
