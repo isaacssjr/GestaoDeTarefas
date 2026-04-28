@@ -334,6 +334,7 @@ class MainWindow(QMainWindow):
         self.notification_timers = {}
         self.last_notification_time = {}
         self.notification_interval = 1800  # 30 minutos em segundos
+        self.multi_task_notified = set()  # Controle para não notificar repetido
         
         self.setup_ui()
         self.setup_tray()
@@ -511,6 +512,7 @@ class MainWindow(QMainWindow):
         
         self.table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         self.table.setSelectionMode(QTableWidget.SelectionMode.SingleSelection)
+        self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self.table.itemSelectionChanged.connect(self.on_selection_changed)
         self.table.cellDoubleClicked.connect(self.on_double_click)
         
@@ -649,40 +651,53 @@ class MainWindow(QMainWindow):
     def check_multiple_tasks(self):
         """Verifica se há múltiplas tarefas ativas e notifica"""
         if len(self.active_tasks) <= 1:
+            # Resetar notificações quando voltar para uma tarefa
+            self.multi_task_notified.clear()
             return
         
         now = time.time()
         
+        # Notificar apenas uma vez por ciclo de 30 min para todas as tarefas
         for task_id in self.active_tasks:
             last_notif = self.last_notification_time.get(task_id, 0)
             
             if now - last_notif >= self.notification_interval:
                 task = self.db.get_task(task_id)
                 if task:
-                    msg = (f"⚠️ Você tem múltiplas tarefas em andamento!\n\n"
-                           f"Uma delas é: {task.get('ticket', '?')}\n"
-                           f"{task.get('description', '')[:50]}...")
+                    # Criar mensagem listando todas as tarefas ativas
+                    active_list = []
+                    for tid in self.active_tasks:
+                        t = self.db.get_task(tid)
+                        if t:
+                            active_list.append(f"• {t.get('ticket', '?')}: {t.get('description', '')[:30]}")
+                    
+                    msg = (f"⚠️ Você tem {len(self.active_tasks)} tarefas em andamento simultâneo!\n\n"
+                           f"Tarefas ativas:\n{chr(10).join(active_list)}\n\n"
+                           f"Lembre-se de gerenciar seu tempo!")
                     
                     # Notificação via system tray
                     self.tray_icon.showMessage(
                         "Gestão de Atividades - Múltiplas Demandas",
                         msg,
                         QSystemTrayIcon.MessageIcon.Warning,
-                        10000
+                        15000
                     )
                     
                     # Notificação via plyer (se disponível)
                     if HAS_PLYER:
                         try:
                             notification.notify(
-                                title="Gestão de Atividades",
+                                title="Gestão de Atividades - Múltiplas Tarefas",
                                 message=msg,
-                                timeout=10
+                                timeout=15
                             )
                         except:
                             pass
                     
-                    self.last_notification_time[task_id] = now
+                    # Atualizar tempo da notificação para TODAS as tarefas ativas
+                    for tid in self.active_tasks:
+                        self.last_notification_time[tid] = now
+                    break  # Sai após notificar uma vez
     
     def parse_call(self, text):
         """Parse automático da linha do chamado"""
