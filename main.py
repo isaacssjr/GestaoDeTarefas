@@ -537,10 +537,10 @@ class MainWindow(QMainWindow):
         self.btn_finish.setEnabled(False)
         buttons_layout.addWidget(self.btn_finish)
         
-        self.btn_delete = QPushButton("❌ Excluir")
-        self.btn_delete.clicked.connect(self.delete_task)
-        self.btn_delete.setEnabled(False)
-        buttons_layout.addWidget(self.btn_delete)
+        self.btn_edit = QPushButton("✏️ Editar")
+        self.btn_edit.clicked.connect(self.edit_task)
+        self.btn_edit.setEnabled(False)
+        buttons_layout.addWidget(self.btn_edit)
         
         buttons_layout.addStretch()
         
@@ -1030,27 +1030,70 @@ class MainWindow(QMainWindow):
         """Conclusão rápida via botão na tabela"""
         self.finish_task(task_id)
     
-    def delete_task(self, task_id=None):
-        """Exclui tarefa"""
+    def edit_task(self, task_id=None):
+        """Edita tarefa selecionada"""
         if task_id is None:
             task_id = self.get_selected_task_id()
         
-        if not task_id:
+        if not task_id or task_id not in self.db.tasks:
+            QMessageBox.warning(self, "Editar", "Selecione uma tarefa válida para editar.")
             return
         
-        reply = QMessageBox.question(
-            self, "Excluir",
-            "Tem certeza que deseja excluir esta tarefa?",
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
-        )
+        task = self.db.tasks[task_id]
         
-        if reply == QMessageBox.StandardButton.Yes:
-            if task_id in self.active_tasks:
-                self.active_tasks.remove(task_id)
+        # Criar diálogo de edição
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Editar Tarefa")
+        dialog.setModal(True)
+        dialog.setMinimumWidth(500)
+        
+        layout = QVBoxLayout()
+        
+        # Título
+        layout.addWidget(QLabel("Título da Tarefa:"))
+        txt_title = QLineEdit(task.get('title', ''))
+        layout.addWidget(txt_title)
+        
+        # Prioridade
+        layout.addWidget(QLabel("Prioridade:"))
+        cmb_priority = QComboBox()
+        cmb_priority.addItems(["Baixa", "Média", "Alta"])
+        current_priority = task.get('priority', 'Média')
+        cmb_priority.setCurrentText(current_priority)
+        layout.addWidget(cmb_priority)
+        
+        # Descrição
+        layout.addWidget(QLabel("Descrição:"))
+        txt_description = QLineEdit(task.get('description', ''))
+        layout.addWidget(txt_description)
+        
+        # Botões
+        btn_layout = QHBoxLayout()
+        btn_save = QPushButton("💾 Salvar")
+        btn_cancel = QPushButton("❌ Cancelar")
+        btn_layout.addWidget(btn_save)
+        btn_layout.addWidget(btn_cancel)
+        layout.addLayout(btn_layout)
+        
+        dialog.setLayout(layout)
+        
+        # Conectar botões
+        btn_save.clicked.connect(dialog.accept)
+        btn_cancel.clicked.connect(dialog.reject)
+        
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            # Atualizar tarefa
+            task['title'] = txt_title.text().strip()
+            task['priority'] = cmb_priority.currentText()
+            task['description'] = txt_description.text().strip()
             
-            self.db.delete_task(task_id)
+            # Adicionar histórico de edição
+            task['history'].append(f"Tarefa editada em {datetime.now().strftime('%d/%m/%Y %H:%M')}")
+            
+            self.db.update_task(task_id, task)
             self.refresh_table()
             self.on_selection_changed()
+            QMessageBox.information(self, "Editar", "Tarefa atualizada com sucesso!")
     
     def format_time(self, seconds):
         """Formata segundos em HH:MM:SS"""
