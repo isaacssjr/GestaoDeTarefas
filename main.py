@@ -876,13 +876,13 @@ class MainWindow(QMainWindow):
                     self.btn_start.setEnabled(status in ['Aguardando', 'Pausado'])
                     self.btn_pause.setEnabled(status == 'Em Andamento')
                     self.btn_finish.setEnabled(status in ['Em Andamento', 'Pausado'])
-                    self.btn_delete.setEnabled(True)  # Habilitar exclusão para qualquer tarefa
+                    self.btn_edit.setEnabled(True)  # Habilitar edição para qualquer tarefa ativa
         else:
             self.selected_row = -1
             self.btn_start.setEnabled(False)
             self.btn_pause.setEnabled(False)
             self.btn_finish.setEnabled(False)
-            self.btn_delete.setEnabled(False)
+            self.btn_edit.setEnabled(False)
     
     def on_double_click(self, row, column):
         """Duplo clique inicia/pausa tarefa"""
