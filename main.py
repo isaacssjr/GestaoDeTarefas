@@ -519,29 +519,8 @@ class MainWindow(QMainWindow):
         table_layout.addWidget(self.table)
         main_layout.addWidget(table_group, stretch=1)
         
-        # === Botões de Ação ===
+        # === Botão de Logs (único botão inferior) ===
         buttons_layout = QHBoxLayout()
-        
-        self.btn_start = QPushButton("▶️ Iniciar/Retomar")
-        self.btn_start.clicked.connect(self.start_task)
-        self.btn_start.setEnabled(False)
-        buttons_layout.addWidget(self.btn_start)
-        
-        self.btn_pause = QPushButton("⏸️ Pausar")
-        self.btn_pause.clicked.connect(self.pause_task)
-        self.btn_pause.setEnabled(False)
-        buttons_layout.addWidget(self.btn_pause)
-        
-        self.btn_finish = QPushButton("✅ Concluir")
-        self.btn_finish.clicked.connect(self.finish_task)
-        self.btn_finish.setEnabled(False)
-        buttons_layout.addWidget(self.btn_finish)
-        
-        self.btn_edit = QPushButton("✏️ Editar")
-        self.btn_edit.clicked.connect(self.edit_task)
-        self.btn_edit.setEnabled(False)
-        buttons_layout.addWidget(self.btn_edit)
-        
         buttons_layout.addStretch()
         
         self.btn_logs = QPushButton("📊 Ver Logs")
@@ -854,6 +833,13 @@ class MainWindow(QMainWindow):
                 btn.clicked.connect(lambda checked, tid=task_id: self.quick_finish(tid))
                 actions_layout.addWidget(btn)
             
+            # Botão de editar
+            btn_edit_inline = QPushButton("✏️")
+            btn_edit_inline.setMaximumWidth(40)
+            btn_edit_inline.setToolTip("Editar tarefa")
+            btn_edit_inline.clicked.connect(lambda checked, tid=task_id: self.edit_task(tid))
+            actions_layout.addWidget(btn_edit_inline)
+            
             self.table.setCellWidget(row, 6, actions_widget)
     
     def on_selection_changed(self):
@@ -873,16 +859,8 @@ class MainWindow(QMainWindow):
                 task = self.db.get_task(task_id)
                 if task:
                     status = task.get('status')
-                    self.btn_start.setEnabled(status in ['Aguardando', 'Pausado'])
-                    self.btn_pause.setEnabled(status == 'Em Andamento')
-                    self.btn_finish.setEnabled(status in ['Em Andamento', 'Pausado'])
-                    self.btn_edit.setEnabled(True)  # Habilitar edição para qualquer tarefa ativa
         else:
             self.selected_row = -1
-            self.btn_start.setEnabled(False)
-            self.btn_pause.setEnabled(False)
-            self.btn_finish.setEnabled(False)
-            self.btn_edit.setEnabled(False)
     
     def on_double_click(self, row, column):
         """Duplo clique inicia/pausa tarefa"""
@@ -914,10 +892,15 @@ class MainWindow(QMainWindow):
         return None
     
     def start_task(self, task_id=None):
+        """Inicia ou retoma tarefa (não usado mais - botões removidos)"""
+        pass
+    
+    def quick_start(self, task_id):
+        """Início rápido via botão na tabela"""
+        self.start_task_inline(task_id)
+    
+    def start_task_inline(self, task_id):
         """Inicia ou retoma tarefa"""
-        if task_id is None:
-            task_id = self.get_selected_task_id()
-        
         if not task_id:
             return
         
@@ -943,15 +926,16 @@ class MainWindow(QMainWindow):
         self.on_selection_changed()
         self.check_multiple_tasks()
     
-    def quick_start(self, task_id):
-        """Início rápido via botão na tabela"""
-        self.start_task(task_id)
-    
     def pause_task(self, task_id=None):
+        """Pausa tarefa (não usado mais - botões removidos)"""
+        pass
+    
+    def quick_pause(self, task_id):
+        """Pausa rápida via botão na tabela"""
+        self.pause_task_inline(task_id)
+    
+    def pause_task_inline(self, task_id):
         """Pausa tarefa"""
-        if task_id is None:
-            task_id = self.get_selected_task_id()
-        
         if not task_id:
             return
         
@@ -981,15 +965,16 @@ class MainWindow(QMainWindow):
         self.refresh_table()
         self.on_selection_changed()
     
-    def quick_pause(self, task_id):
-        """Pausa rápida via botão na tabela"""
-        self.pause_task(task_id)
-    
     def finish_task(self, task_id=None):
+        """Conclui tarefa (não usado mais - botões removidos)"""
+        pass
+    
+    def quick_finish(self, task_id):
+        """Conclusão rápida via botão na tabela"""
+        self.finish_task_inline(task_id)
+    
+    def finish_task_inline(self, task_id):
         """Conclui tarefa"""
-        if task_id is None:
-            task_id = self.get_selected_task_id()
-        
         if not task_id:
             return
         
@@ -1025,10 +1010,6 @@ class MainWindow(QMainWindow):
             f"Tarefa {task.get('ticket', '?')} finalizada!\n"
             f"Tempo total: {self.format_time(task['total_seconds'])}"
         )
-    
-    def quick_finish(self, task_id):
-        """Conclusão rápida via botão na tabela"""
-        self.finish_task(task_id)
     
     def edit_task(self, task_id=None):
         """Edita tarefa selecionada"""
