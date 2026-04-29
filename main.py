@@ -1039,15 +1039,13 @@ class MainWindow(QMainWindow):
                 QMessageBox.warning(self, "Editar", "Selecione uma tarefa válida para editar.")
                 return
             
-            # Pega a primeira coluna da primeira linha selecionada para garantir o ID
+            # Pega a linha selecionada e converte para ID completo
             row = selected_items[0].row()
-            ticket_item = self.table.item(row, 0)
+            task_id = self.get_task_id_from_row(row)
             
-            if not ticket_item:
+            if not task_id:
                 QMessageBox.warning(self, "Editar", "Erro ao identificar a tarefa.")
                 return
-                
-            task_id = ticket_item.text()
         
         # Verifica se o ID existe no banco
         if not task_id or task_id not in self.db.tasks:
