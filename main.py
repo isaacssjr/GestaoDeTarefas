@@ -497,13 +497,13 @@ class MainWindow(QMainWindow):
         self.table = QTableWidget()
         self.table.setColumnCount(7)
         self.table.setHorizontalHeaderLabels([
-            "ID", "Ticket", "Descrição", "Prioridade", "Status", "Tempo", "Ações"
+            "Ticket", "E-mail", "Descrição", "Prioridade", "Status", "Tempo", "Ações"
         ])
         
         header = self.table.horizontalHeader()
         header.setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
-        self.table.setColumnWidth(0, 80)   # ID
-        self.table.setColumnWidth(1, 120)  # Ticket
+        self.table.setColumnWidth(0, 120)  # Ticket
+        self.table.setColumnWidth(1, 200)  # E-mail
         self.table.setColumnWidth(2, 350)  # Descrição
         self.table.setColumnWidth(3, 80)   # Prioridade
         self.table.setColumnWidth(4, 100)  # Status
@@ -783,8 +783,8 @@ class MainWindow(QMainWindow):
             time_str = f"{hours:02}:{minutes:02}:{seconds:02}"
             
             # Definir itens
-            self.table.setItem(row, 0, QTableWidgetItem(task_id[-4:]))
-            self.table.setItem(row, 1, QTableWidgetItem(task.get('ticket', '-')))
+            self.table.setItem(row, 0, QTableWidgetItem(task.get('ticket', '-')))
+            self.table.setItem(row, 1, QTableWidgetItem(task.get('email', '-')))
             self.table.setItem(row, 2, QTableWidgetItem(task.get('description', '-')[:50]))
             
             # Prioridade com cor
@@ -1044,10 +1044,15 @@ class MainWindow(QMainWindow):
             
             layout = QVBoxLayout()
             
-            # Título
-            layout.addWidget(QLabel("Título da Tarefa:"))
-            txt_title = QLineEdit(task.get('title', ''))
-            layout.addWidget(txt_title)
+            # Ticket
+            layout.addWidget(QLabel("Ticket:"))
+            txt_ticket = QLineEdit(task.get('ticket', ''))
+            layout.addWidget(txt_ticket)
+            
+            # E-mail
+            layout.addWidget(QLabel("E-mail:"))
+            txt_email = QLineEdit(task.get('email', ''))
+            layout.addWidget(txt_email)
             
             # Prioridade
             layout.addWidget(QLabel("Prioridade:"))
@@ -1079,13 +1084,19 @@ class MainWindow(QMainWindow):
             btn_cancel.clicked.connect(dialog.reject)
             
             if dialog.exec() == QDialog.DialogCode.Accepted:
-                new_title = txt_title.text().strip()
-                if not new_title:
-                    QMessageBox.warning(self, "Erro", "O título não pode estar vazio.")
+                new_ticket = txt_ticket.text().strip()
+                if not new_ticket:
+                    QMessageBox.warning(self, "Erro", "O ticket não pode estar vazio.")
+                    return
+
+                new_email = txt_email.text().strip()
+                if not new_email:
+                    QMessageBox.warning(self, "Erro", "O e-mail não pode estar vazio.")
                     return
 
                 # Atualizar tarefa
-                task['title'] = new_title
+                task['ticket'] = new_ticket
+                task['email'] = new_email
                 task['priority'] = cmb_priority.currentText()
                 task['description'] = txt_description.toPlainText().strip()
                 
