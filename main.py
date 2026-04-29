@@ -1032,18 +1032,33 @@ class MainWindow(QMainWindow):
     
     def edit_task(self, task_id=None):
         """Edita tarefa selecionada"""
+        # Se não passou ID, tenta pegar da seleção atual
         if task_id is None:
-            task_id = self.get_selected_task_id()
+            selected_items = self.table.selectedItems()
+            if not selected_items:
+                QMessageBox.warning(self, "Editar", "Selecione uma tarefa válida para editar.")
+                return
+            
+            # Pega a primeira coluna da primeira linha selecionada para garantir o ID
+            row = selected_items[0].row()
+            ticket_item = self.table.item(row, 0)
+            
+            if not ticket_item:
+                QMessageBox.warning(self, "Editar", "Erro ao identificar a tarefa.")
+                return
+                
+            task_id = ticket_item.text()
         
+        # Verifica se o ID existe no banco
         if not task_id or task_id not in self.db.tasks:
-            QMessageBox.warning(self, "Editar", "Selecione uma tarefa válida para editar.")
+            QMessageBox.warning(self, "Editar", "Tarefa selecionada não encontrada ou já foi concluída.")
             return
         
         task = self.db.tasks[task_id]
         
         # Criar diálogo de edição
         dialog = QDialog(self)
-        dialog.setWindowTitle("Editar Tarefa")
+        dialog.setWindowTitle(f"Editar Tarefa {task_id}")
         dialog.setModal(True)
         dialog.setMinimumWidth(500)
         
@@ -1064,7 +1079,9 @@ class MainWindow(QMainWindow):
         
         # Descrição
         layout.addWidget(QLabel("Descrição:"))
-        txt_description = QLineEdit(task.get('description', ''))
+        txt_description = QTextEdit()  # Mudado para QTextEdit para permitir múltiplas linhas
+        txt_description.setPlainText(task.get('description', ''))
+        txt_description.setMaximumHeight(150)
         layout.addWidget(txt_description)
         
         # Botões
@@ -1082,10 +1099,15 @@ class MainWindow(QMainWindow):
         btn_cancel.clicked.connect(dialog.reject)
         
         if dialog.exec() == QDialog.DialogCode.Accepted:
+            new_title = txt_title.text().strip()
+            if not new_title:
+                QMessageBox.warning(self, "Erro", "O título não pode estar vazio.")
+                return
+
             # Atualizar tarefa
-            task['title'] = txt_title.text().strip()
+            task['title'] = new_title
             task['priority'] = cmb_priority.currentText()
-            task['description'] = txt_description.text().strip()
+            task['description'] = txt_description.toPlainText().strip()
             
             # Adicionar histórico de edição
             task['history'].append(f"Tarefa editada em {datetime.now().strftime('%d/%m/%Y %H:%M')}")
